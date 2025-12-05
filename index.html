@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Agendamento de Consulta</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    /* Layout geral */
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f3f4f6;
+    }
+
+    .container {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+      padding: 20px;
+    }
+
+    h1 {
+      font-size: 1.4rem;
+      text-align: center;
+      margin: 0 0 10px 0;
+      color: #111827;
+    }
+
+    p.subtitulo {
+      font-size: 0.9rem;
+      text-align: center;
+      margin: 0 0 16px 0;
+      color: #6b7280;
+    }
+
+    /* Formulário */
+    label {
+      display: block;
+      margin-top: 12px;
+      margin-bottom: 4px;
+      font-size: 0.9rem;
+      color: #374151;
+    }
+
+    select,
+    input,
+    textarea {
+      width: 100%;
+      padding: 10px 12px;
+      box-sizing: border-box;
+      border-radius: 8px;
+      border: 1px solid #d1d5db;
+      font-size: 16px; /* evita zoom no iOS */
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+      background-color: #f9fafb;
+    }
+
+    select:focus,
+    input:focus,
+    textarea:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+      background-color: #ffffff;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 70px;
+    }
+
+    /* Botões */
+    button,
+    .btn {
+      display: inline-block;
+      width: 100%;
+      padding: 12px;
+      margin-top: 16px;
+      border: none;
+      border-radius: 9999px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      text-decoration: none;
+    }
+
+    button.primary {
+      background-color: #3b82f6;
+      color: #ffffff;
+    }
+
+    button.primary:active {
+      background-color: #2563eb;
+    }
+
+    .btn.whatsapp {
+      background-color: #25D366;
+      color: #ffffff;
+    }
+
+    .btn.whatsapp:active {
+      background-color: #1db954;
+    }
+
+    /* Mensagens */
+    .msg {
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+    }
+
+    .msg.sucesso {
+      background: #d1fae5;
+      color: #065f46;
+      border: 1px solid #6ee7b7;
+    }
+
+    .msg.erro {
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+    }
+
+    #loading {
+      font-size: 0.95rem;
+      text-align: center;
+      color: #6b7280;
+      padding: 24px 0;
+    }
+
+    @media (min-width: 600px) {
+      .container {
+        padding-top: 32px;
+        padding-bottom: 32px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="card">
+      <h1>Agendamento de Consulta</h1>
+      <p class="subtitulo">Escolha um horário disponível e preencha seus dados.</p>
+
+      <div id="loading">Carregando horários disponíveis...</div>
+
+      <div id="form-container" style="display:none;">
+        <label for="slotSelect">Data e horário</label>
+        <select id="slotSelect"></select>
+
+        <label for="nome">Nome completo</label>
+        <input type="text" id="nome" placeholder="Seu nome" required>
+
+        <label for="telefone">Telefone (WhatsApp)</label>
+        <input type="tel" id="telefone" placeholder="(DDD) 9 9999-9999" required>
+
+        <label for="observacoes">Observações (opcional)</label>
+        <textarea id="observacoes" placeholder="Ex: retorno, teleconsulta, etc."></textarea>
+
+        <button class="primary" type="button" onclick="enviarAgendamento()">
+          Confirmar agendamento
+        </button>
+
+        <div id="mensagem" class="msg" style="display:none;"></div>
+
+        <div id="whatsapp-container" style="display:none; margin-top: 10px;">
+          <a id="whatsapp-link" href="#" target="_blank" class="btn whatsapp">
+            Confirmar pelo WhatsApp
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 👉 TROCAR PELO SEU LINK DO APPS SCRIPT (exec)
+    const API_URL = 'https://script.google.com/macros/s/SEU_ID_AQUI/exec';
+
+    // 👉 TROCAR PELO SEU NÚMERO DE WHATSAPP (55 + DDD + número)
+    const WHATSAPP_DESTINO = '5548999999999';
+
+    let slotsGlobais = [];
+
+    async function carregarHorarios() {
+      const loading = document.getElementById('loading');
+      const formContainer = document.getElementById('form-container');
+      const select = document.getElementById('slotSelect');
+
+      loading.innerText = 'Carregando horários disponíveis...';
+      formContainer.style.display = 'none';
+
+      try {
+        const resp = await fetch(API_URL + '?action=getSlots');
+        if (!resp.ok) {
+          throw new Error('Erro ao carregar horários (HTTP ' + resp.status + ')');
+        }
+
+        const slots = await resp.json();
+        console.log('Slots recebidos do servidor:', slots);
+        slotsGlobais = slots || [];
+
+        if (!slotsGlobais.length) {
+          loading.innerText = 'Nenhum horário disponível no momento.';
+          return;
+        }
+
+        select.innerHTML = '';
+        slotsGlobais.forEach((slot, index) => {
+          const option = document.createElement('option');
+          option.value = index;
+          option.text = slot.data + ' - ' + slot.hora;
+          select.appendChild(option);
+        });
+
+        loading.style.display = 'none';
+        formContainer.style.display = 'block';
+      } catch (err) {
+        console.error(err);
+        loading.innerText = 'Erro ao carregar horários.';
+      }
+    }
+
+    async function enviarAgendamento() {
+      const select = document.getElementById('slotSelect');
+      const idx = select.value;
+      const slot = slotsGlobais[idx];
+
+      const nome = document.getElementById('nome').value.trim();
+      const telefone = document.getElementById('telefone').value.trim();
+      const observacoes = document.getElementById('observacoes').value.trim();
+      const msgDiv = document.getElementById('mensagem');
+      const waDiv = document.getElementById('whatsapp-container');
+      const waLink = document.getElementById('whatsapp-link');
+
+      waDiv.style.display = 'none';
+
+      if (!slot) {
+        msgDiv.className = 'msg erro';
+        msgDiv.style.display = 'block';
+        msgDiv.innerText = 'Por favor, escolha um horário válido.';
+        return;
+      }
+
+      if (!nome || !telefone) {
+        msgDiv.className = 'msg erro';
+        msgDiv.style.display = 'block';
+        msgDiv.innerText = 'Preencha nome e telefone.';
+        return;
+      }
+
+      msgDiv.className = 'msg';
+      msgDiv.style.display = 'block';
+      msgDiv.innerText = 'Enviando agendamento...';
+
+      const dados = {
+        rowIndex: slot.rowIndex,
+        nome: nome,
+        telefone: telefone,
+        observacoes: observacoes
+      };
+
+      console.log('Enviando para API:', dados);
+
+      try {
+        const resp = await fetch(API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(dados)
+        });
+
+        if (!resp.ok) {
+          throw new Error('Erro ao agendar (HTTP ' + resp.status + ')');
+        }
+
+        const res = await resp.json();
+        console.log('Resposta da API:', res);
+
+        const mensagem = (res && res.mensagem)
+          ? res.mensagem
+          : 'Agendamento realizado com sucesso!';
+
+        msgDiv.className = 'msg sucesso';
+        msgDiv.style.display = 'block';
+        msgDiv.innerText = mensagem;
+
+        const texto =
+          'Olá! Aqui é ' + nome +
+          '. Acabei de agendar uma consulta para ' + slot.data +
+          ' às ' + slot.hora +
+          '. Poderia confirmar, por favor?';
+
+        const url = 'https://wa.me/' + WHATSAPP_DESTINO + '?text=' + encodeURIComponent(texto);
+        waLink.href = url;
+        waDiv.style.display = 'block';
+
+        // Recarrega horários (aquele vira OCUPADO)
+        carregarHorarios();
+      } catch (err) {
+        console.error(err);
+        msgDiv.className = 'msg erro';
+        msgDiv.style.display = 'block';
+        msgDiv.innerText = err.message || 'Erro ao realizar agendamento. Tente novamente.';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', carregarHorarios);
+  </script>
+</body>
+</html>
