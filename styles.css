@@ -551,12 +551,19 @@ textarea {
 }
 
 .select-wrapper-large select {
-  padding: var(--spacing-lg);
-  font-size: var(--font-size-lg);
+  padding: var(--spacing-md);
+  font-size: var(--font-size-base);
   font-weight: 500;
   background: var(--color-primary-ghost);
   border-color: var(--color-primary-subtle);
   border-radius: var(--radius-lg);
+}
+
+@media (min-width: 480px) {
+  .select-wrapper-large select {
+    padding: var(--spacing-lg);
+    font-size: var(--font-size-lg);
+  }
 }
 
 .select-wrapper-large select:focus {
