@@ -1,612 +1,194 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
   <meta charset="UTF-8">
-  <title>Agendamento de Consulta</title>
+  <title>Agendamento de Consulta | Consulta de Enfermagem</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <style>
-    /* Layout geral */
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
-      min-height: 100vh;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-    }
-
-    .container {
-      max-width: 560px;
-      margin: 0 auto;
-      padding: 24px 16px;
-    }
-
-    .card {
-      background: #ffffff;
-      border-radius: 16px;
-      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.04);
-      padding: 32px 28px;
-      border: none;
-      transition: box-shadow 0.3s ease;
-    }
-
-    h1 {
-      font-size: 1.75rem;
-      font-weight: 700;
-      text-align: center;
-      margin: 0 0 8px 0;
-      color: #0f172a;
-      letter-spacing: -0.02em;
-    }
-
-    p.subtitulo {
-      font-size: 0.9375rem;
-      text-align: center;
-      margin: 0 0 32px 0;
-      color: #64748b;
-      line-height: 1.5;
-      font-weight: 400;
-    }
-
-    /* Formulário */
-    label {
-      display: block;
-      margin-top: 20px;
-      margin-bottom: 6px;
-      font-size: 0.875rem;
-      color: #1e293b;
-      font-weight: 600;
-      letter-spacing: -0.01em;
-    }
-
-    label:first-of-type {
-      margin-top: 0;
-    }
-
-    select,
-    input,
-    textarea {
-      width: 100%;
-      padding: 12px 16px;
-      box-sizing: border-box;
-      border-radius: 10px;
-      border: 1.5px solid #e2e8f0;
-      font-size: 16px; /* evita zoom no iOS */
-      outline: none;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-      background-color: #ffffff;
-      color: #0f172a;
-      font-family: inherit;
-    }
-
-    select:hover,
-    input:hover,
-    textarea:hover {
-      border-color: #cbd5e1;
-    }
-
-    select:focus,
-    input:focus,
-    textarea:focus {
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
-      background-color: #ffffff;
-    }
-
-    select::placeholder,
-    input::placeholder,
-    textarea::placeholder {
-      color: #94a3b8;
-    }
-
-    textarea {
-      resize: vertical;
-      min-height: 100px;
-      line-height: 1.5;
-    }
-
-    /* Botões */
-    button,
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-      padding: 14px 20px;
-      margin-top: 24px;
-      border: none;
-      border-radius: 12px;
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
-      text-align: center;
-      text-decoration: none;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-      letter-spacing: -0.01em;
-    }
-
-    button.primary {
-      background: #2563eb;
-      color: #ffffff;
-    }
-
-    button.primary:hover {
-      background: #1d4ed8;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
-    }
-
-    button.primary:active {
-      transform: translateY(0);
-      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.2);
-    }
-
-    .btn.whatsapp {
-      background: #25d366;
-      color: #ffffff;
-      gap: 10px;
-      margin-top: 16px;
-    }
-
-    .btn.whatsapp span.icon {
-      display: inline-flex;
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      align-items: center;
-      justify-content: center;
-      background: rgba(255, 255, 255, 0.2);
-      font-size: 12px;
-    }
-
-    .btn.whatsapp:hover {
-      background: #20ba5a;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3);
-    }
-
-    .btn.whatsapp:active {
-      transform: translateY(0);
-      box-shadow: 0 2px 6px rgba(37, 211, 102, 0.2);
-    }
-
-    /* Mensagens */
-    .msg {
-      margin-top: 20px;
-      padding: 20px;
-      border-radius: 12px;
-      font-size: 0.9375rem;
-      line-height: 1.6;
-    }
-
-    .msg.sucesso {
-      background: #f0f9ff;
-      color: #0c4a6e;
-      border: 1px solid #bae6fd;
-    }
-
-    .msg.erro {
-      background: #fef2f2;
-      color: #991b1b;
-      border: 1px solid #fecaca;
-    }
-
-    .msg p {
-      margin: 8px 0;
-    }
-
-    .msg p:first-child {
-      margin-top: 0;
-    }
-
-    .msg p:last-child {
-      margin-bottom: 0;
-    }
-
-    .resumo-header {
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-      margin-bottom: 16px;
-      padding-bottom: 16px;
-      border-bottom: 1px solid rgba(14, 165, 233, 0.2);
-    }
-
-    .resumo-header .icon-ok {
-      flex-shrink: 0;
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      background: #0ea5e9;
-      color: #ffffff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-      font-weight: 600;
-    }
-
-    .resumo-titulo {
-      font-weight: 700;
-      font-size: 1rem;
-      margin-bottom: 4px;
-      color: #0c4a6e;
-      letter-spacing: -0.01em;
-    }
-
-    .resumo-subtitulo {
-      font-size: 0.875rem;
-      color: #0369a1;
-      line-height: 1.4;
-    }
-
-    .resumo-lista {
-      list-style: none;
-      padding-left: 0;
-      margin: 0 0 16px 0;
-    }
-
-    .resumo-lista li {
-      margin-bottom: 10px;
-      padding: 8px 0;
-      border-bottom: 1px solid rgba(14, 165, 233, 0.1);
-      font-size: 0.9375rem;
-      line-height: 1.5;
-    }
-
-    .resumo-lista li:last-child {
-      border-bottom: none;
-      margin-bottom: 0;
-    }
-
-    .resumo-lista li strong {
-      color: #0c4a6e;
-      font-weight: 600;
-      display: inline-block;
-      min-width: 140px;
-    }
-
-    .resumo-footer {
-      margin-top: 16px;
-      padding-top: 16px;
-      border-top: 1px solid rgba(14, 165, 233, 0.2);
-      font-size: 0.875rem;
-      color: #0c4a6e;
-      line-height: 1.6;
-    }
-
-    #loading {
-      font-size: 0.9375rem;
-      text-align: center;
-      color: #64748b;
-      padding: 32px 0;
-      font-weight: 500;
-    }
-
-    /* Loading / spinners */
-    .loading-row {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-    }
-
-    .spinner {
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      border: 2.5px solid rgba(37, 99, 235, 0.2);
-      border-top-color: #2563eb;
-      animation: spin 0.8s cubic-bezier(0.5, 0, 0.5, 1) infinite;
-    }
-
-    .spinner.spinner-sm {
-      width: 16px;
-      height: 16px;
-      border-width: 2px;
-    }
-
-    @keyframes spin {
-      to {
-        transform: rotate(360deg);
-      }
-    }
-
-    @media (min-width: 600px) {
-      .container {
-        padding-top: 32px;
-        padding-bottom: 32px;
-      }
-    }
-  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
-  <div class="container">
-    <div class="card">
-      <h1>Agendamento de Consulta</h1>
-      <p class="subtitulo">Escolha um horário disponível e preencha seus dados.</p>
+  <div class="page-wrapper">
+    <!-- Background decorativo -->
+    <div class="bg-pattern" aria-hidden="true"></div>
 
-      <div id="loading">Carregando horários disponíveis...</div>
-
-      <div id="form-container" style="display:none;">
-        <div id="form-fields">
-          <label for="slotSelect">Data e horário</label>
-          <select id="slotSelect" required></select>
-
-          <label for="nome">Nome completo</label>
-          <input type="text" id="nome" placeholder="Seu nome" required>
-
-          <label for="dataNascimento">Data de nascimento</label>
-          <input type="text" id="dataNascimento" placeholder="06/05/1990" maxlength="10" required>
-
-          <label for="telefone">Telefone (WhatsApp)</label>
-          <input type="tel" id="telefone" placeholder="(DDD) 9 9999-9999" required>
-
-          <label for="observacoes">Motivo da Consulta</label>
-          <textarea id="observacoes" placeholder="Ex: retorno, teleconsulta, etc." required></textarea>
-
-          <button class="primary" type="button" onclick="enviarAgendamento()">
-            Confirmar agendamento
-          </button>
+    <!-- Header com branding -->
+    <header class="header">
+      <div class="logo">
+        <div class="logo-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+          </svg>
         </div>
-
-        <div id="mensagem" class="msg" style="display:none;"></div>
-
-        <div id="whatsapp-container" style="display:none; margin-top: 10px;">
-          <a id="whatsapp-link" href="#" target="_blank" class="btn whatsapp">
-            <span class="icon"></span>
-            <span>Confirmar pelo WhatsApp</span>
-          </a>
+        <div class="logo-text">
+          <span class="logo-title">Consulta de Enfermagem</span>
         </div>
       </div>
-    </div>
+    </header>
+
+    <!-- Container principal -->
+    <main class="main-container">
+      <div class="card">
+        <!-- Seção do título -->
+        <div class="card-header">
+          <div class="badge">
+            <span class="badge-dot"></span>
+            Horários disponíveis
+          </div>
+          <h1>Agende sua consulta</h1>
+          <p class="description">
+            Selecione o melhor horário para você e preencha seus dados.
+            O agendamento será confirmado via WhatsApp.
+          </p>
+        </div>
+
+        <!-- Loading state -->
+        <div id="loading" class="loading-container">
+          <div class="loading-card">
+            <div class="pulse-ring"></div>
+            <div class="loading-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
+            </div>
+            <p class="loading-text">Buscando horários disponíveis...</p>
+          </div>
+        </div>
+
+        <!-- Formulário -->
+        <div id="form-container" class="form-container" style="display:none;">
+          <form id="agendamento-form" novalidate>
+            <div id="form-fields" class="form-fields">
+
+              <!-- Campo: Data e horário -->
+              <div class="form-group form-group-highlight">
+                <label for="slotSelect">
+                  <span class="label-icon">📅</span>
+                  Data e horário
+                </label>
+                <div class="select-wrapper">
+                  <select id="slotSelect" name="slot" required aria-required="true" aria-describedby="slot-error">
+                    <option value="">Escolha um horário</option>
+                  </select>
+                  <span class="select-arrow" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="6 9 12 15 18 9" />
+                    </svg>
+                  </span>
+                </div>
+                <span id="slot-error" class="error-message" role="alert"></span>
+              </div>
+
+              <div class="form-divider">
+                <span>Seus dados</span>
+              </div>
+
+              <!-- Campo: Nome -->
+              <div class="form-group">
+                <label for="nome">
+                  <span class="label-icon">👤</span>
+                  Nome completo
+                </label>
+                <input type="text" id="nome" name="nome" placeholder="Digite seu nome completo" required
+                  aria-required="true" aria-describedby="nome-error" autocomplete="name">
+                <span id="nome-error" class="error-message" role="alert"></span>
+              </div>
+
+              <!-- Grid de 2 colunas para campos menores -->
+              <div class="form-row">
+                <!-- Campo: Data de nascimento -->
+                <div class="form-group">
+                  <label for="dataNascimento">
+                    <span class="label-icon">🎂</span>
+                    Data de nascimento
+                  </label>
+                  <input type="text" id="dataNascimento" name="dataNascimento" placeholder="DD/MM/AAAA" maxlength="10"
+                    required aria-required="true" aria-describedby="dataNascimento-error" autocomplete="bday">
+                  <span id="dataNascimento-error" class="error-message" role="alert"></span>
+                </div>
+
+                <!-- Campo: Telefone -->
+                <div class="form-group">
+                  <label for="telefone">
+                    <span class="label-icon">📱</span>
+                    Telefone (WhatsApp)
+                  </label>
+                  <input type="tel" id="telefone" name="telefone" placeholder="(00) 00000-0000" required
+                    aria-required="true" aria-describedby="telefone-error" autocomplete="tel">
+                  <span id="telefone-error" class="error-message" role="alert"></span>
+                </div>
+              </div>
+
+              <!-- Campo: Motivo da consulta -->
+              <div class="form-group">
+                <label for="observacoes">
+                  <span class="label-icon">📋</span>
+                  Motivo da consulta
+                </label>
+                <textarea id="observacoes" name="observacoes"
+                  placeholder="Descreva brevemente o motivo da sua consulta..." required aria-required="true"
+                  aria-describedby="observacoes-error" rows="3"></textarea>
+                <span id="observacoes-error" class="error-message" role="alert"></span>
+              </div>
+
+              <!-- Botão de envio -->
+              <button type="submit" class="btn btn-primary" id="submit-btn">
+                <span class="btn-text">Confirmar agendamento</span>
+                <span class="btn-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                    <polyline points="12 5 19 12 12 19" />
+                  </svg>
+                </span>
+              </button>
+            </div>
+          </form>
+
+          <!-- Mensagem de feedback -->
+          <div id="mensagem" class="msg" style="display:none;" role="status" aria-live="polite"></div>
+
+          <!-- Botão WhatsApp -->
+          <div id="whatsapp-container" class="whatsapp-container" style="display:none;">
+            <a id="whatsapp-link" href="#" target="_blank" rel="noopener noreferrer" class="btn btn-whatsapp">
+              <span class="btn-icon-left">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path
+                    d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+                </svg>
+              </span>
+              <span class="btn-text">Finalizar no WhatsApp</span>
+            </a>
+            <p class="whatsapp-hint">Clique para enviar a confirmação pelo WhatsApp</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Info cards -->
+      <div class="info-section info-section-single">
+        <div class="info-card info-card-full">
+          <div class="info-icon">📍</div>
+          <div class="info-content">
+            <strong>Centro de Saúde Alto Ribeirão</strong>
+            <span>R. Ingá Mirim, S/N° - Ribeirão da Ilha, Florianópolis - SC, 88064-082</span>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <p>© 2024 Consulta de Enfermagem. Todos os direitos reservados.</p>
+    </footer>
   </div>
 
-  <script>
-    // 👉 TROCAR PELO SEU LINK DO APPS SCRIPT (exec)
-    const API_URL = 'https://script.google.com/macros/s/AKfycbxctImh1MzJ8bNIMSTYOMy4DxuLloCSzXDn1z5l1VO5Re55T8ScH7yLl-olWBOMNUVDSg/exec';
-
-    // 👉 TROCAR PELO SEU NÚMERO DE WHATSAPP (55 + DDD + número)
-    const WHATSAPP_DESTINO = '5548920039171';
-
-    let slotsGlobais = [];
-
-    // Validação da URL ao carregar
-    (function() {
-      console.log('🔧 API_URL configurada:', API_URL);
-      if (!API_URL || API_URL.includes('SEU_ID_AQUI') || !API_URL.includes('script.google.com')) {
-        console.error('❌ ERRO: API_URL não configurada corretamente!', API_URL);
-        alert('ERRO: URL do Google Apps Script não configurada. Verifique o código.');
-      }
-    })();
-
-    async function carregarHorarios() {
-      const loading = document.getElementById('loading');
-      const formContainer = document.getElementById('form-container');
-      const select = document.getElementById('slotSelect');
-
-      loading.innerHTML = '<div class="loading-row"><div class="spinner"></div><span>Carregando horários disponíveis...</span></div>';
-      formContainer.style.display = 'none';
-
-      try {
-        // Validação da URL antes de fazer a requisição
-        if (!API_URL || API_URL.includes('SEU_ID_AQUI')) {
-          throw new Error('URL do Google Apps Script não configurada. Verifique a constante API_URL no código.');
-        }
-
-        const url = API_URL + '?action=getSlots';
-        console.log('🔍 Fazendo requisição para:', url);
-        
-        const resp = await fetch(url, {
-          method: 'GET',
-          mode: 'cors',
-          cache: 'no-cache'
-        });
-        
-        console.log('📡 Status da resposta:', resp.status, resp.statusText);
-        
-        if (!resp.ok) {
-          if (resp.status === 404) {
-            throw new Error('Erro 404: Script não encontrado. Verifique:\n1. Se o Google Apps Script está publicado\n2. Se a URL está correta\n3. Se o ID do script está correto');
-          }
-          throw new Error('Erro ao carregar horários (HTTP ' + resp.status + ')');
-        }
-
-        const slots = await resp.json();
-        console.log('Slots recebidos do servidor:', slots);
-        slotsGlobais = slots || [];
-
-        if (!slotsGlobais.length) {
-          loading.innerText = 'Nenhum horário disponível no momento.';
-          return;
-        }
-
-        select.innerHTML = '';
-        slotsGlobais.forEach((slot, index) => {
-          const option = document.createElement('option');
-          option.value = index;
-
-          const diaSemanaLabel = slot.diaSemana
-            ? slot.diaSemana.replace('-feira', '')
-            : '';
-
-          const dataComDia = diaSemanaLabel
-            ? diaSemanaLabel + ', ' + slot.data
-            : slot.data;
-
-          option.text = dataComDia + ' - ' + slot.hora;
-          select.appendChild(option);
-        });
-
-        loading.style.display = 'none';
-        formContainer.style.display = 'block';
-      } catch (err) {
-        console.error(err);
-        loading.innerText = 'Erro ao carregar horários.';
-      }
-    }
-
-    async function enviarAgendamento() {
-      const select = document.getElementById('slotSelect');
-      const idx = select.value;
-      const slot = slotsGlobais[idx];
-
-      const nome = document.getElementById('nome').value.trim();
-      const telefone = document.getElementById('telefone').value.trim();
-      const dataNascimento = document.getElementById('dataNascimento').value.trim();
-      const observacoes = document.getElementById('observacoes').value.trim();
-      const msgDiv = document.getElementById('mensagem');
-      const waDiv = document.getElementById('whatsapp-container');
-      const waLink = document.getElementById('whatsapp-link');
-      const formFields = document.getElementById('form-fields');
-
-      waDiv.style.display = 'none';
-
-      if (!slot) {
-        msgDiv.className = 'msg erro';
-        msgDiv.style.display = 'block';
-        msgDiv.innerText = 'Por favor, escolha um horário válido.';
-        return;
-      }
-
-      if (!nome || !telefone || !dataNascimento || !observacoes) {
-        msgDiv.className = 'msg erro';
-        msgDiv.style.display = 'block';
-        msgDiv.innerText = 'Preencha data, nome, data de nascimento, telefone e motivo da consulta.';
-        return;
-      }
-
-      // Valida formato da data de nascimento (dd/MM/yyyy)
-      const dataNascRegex = /^(\d{2})\/(\d{2})\/(\d{4})$/;
-      if (!dataNascRegex.test(dataNascimento)) {
-        msgDiv.className = 'msg erro';
-        msgDiv.style.display = 'block';
-        msgDiv.innerText = 'Data de nascimento inválida. Use o formato DD/MM/AAAA (ex: 06/05/1990).';
-        return;
-      }
-
-      // Estado de "loading" enquanto envia para a API
-      msgDiv.className = 'msg';
-      msgDiv.style.display = 'block';
-      msgDiv.innerHTML =
-        '<div class="loading-row">' +
-        '<div class="spinner spinner-sm"></div>' +
-        '<div><strong>Enviando agendamento...</strong><br>' +
-        '<span>Aguarde alguns instantes.</span></div>' +
-        '</div>';
-
-      const dados = {
-        rowIndex: slot.rowIndex,
-        nome: nome,
-        telefone: telefone,
-        dataNascimento: dataNascimento,
-        observacoes: observacoes
-      };
-
-      console.log('Enviando para API:', dados);
-
-      try {
-        const resp = await fetch(API_URL, {
-          method: 'POST',
-          headers: {
-            // IMPORTANTE: text/plain para evitar preflight CORS
-            'Content-Type': 'text/plain;charset=utf-8'
-          },
-          body: JSON.stringify(dados)
-        });
-
-        if (!resp.ok) {
-          throw new Error('Erro ao agendar (HTTP ' + resp.status + ')');
-        }
-
-        const res = await resp.json();
-        console.log('Resposta da API:', res);
-
-        // Monta o resumo do agendamento, em blocos, mais legível
-        const diaSemanaLabelResumo = slot.diaSemana
-          ? slot.diaSemana.replace('-feira', '')
-          : '';
-
-        let resumoHtml = '<div class="resumo-header">';
-        resumoHtml += '<div class="icon-ok">✓</div>';
-        resumoHtml += '<div><div class="resumo-titulo">Agendamento solicitado com sucesso</div>';
-        resumoHtml += '<div class="resumo-subtitulo">Confira os dados abaixo e finalize pelo WhatsApp.</div></div></div>';
-
-        resumoHtml += '<ul class="resumo-lista">';
-        resumoHtml += '<li><strong>Data:</strong> ' +
-          (diaSemanaLabelResumo ? diaSemanaLabelResumo + ', ' : '') +
-          slot.data + '</li>';
-        resumoHtml += '<li><strong>Horário:</strong> ' + slot.hora + '</li>';
-        resumoHtml += '<li><strong>Nome:</strong> ' + nome + '</li>';
-        resumoHtml += '<li><strong>Telefone:</strong> ' + telefone + '</li>';
-        resumoHtml += '<li><strong>Data de nascimento:</strong> ' + dataNascimento + '</li>';
-
-        if (observacoes) {
-          resumoHtml += '<li><strong>Motivo da Consulta:</strong> ' + observacoes + '</li>';
-        }
-
-        resumoHtml += '</ul>';
-
-        resumoHtml += '<p class="resumo-footer">Para <strong>CONCLUIR seu agendamento</strong>, é '
-          + '<strong>obrigatório confirmar pelo WhatsApp</strong>. '
-          + 'Clique no botão abaixo para enviar a mensagem. Sem essa confirmação, o horário poderá não ser reservado.</p>';
-
-        msgDiv.className = 'msg sucesso';
-        msgDiv.style.display = 'block';
-        msgDiv.innerHTML = resumoHtml;
-
-        const texto =
-          'Olá! Aqui é ' + nome +
-          '. Acabei de solicitar um agendamento para ' +
-          (diaSemanaLabelResumo ? diaSemanaLabelResumo + ', ' : '') +
-          slot.data +
-          ' às ' + slot.hora +
-          '. Poderia confirmar, por favor?';
-
-        const url = 'https://wa.me/' + WHATSAPP_DESTINO + '?text=' + encodeURIComponent(texto);
-        waLink.href = url;
-        waDiv.style.display = 'block';
-
-        // Esconde todos os campos do formulário (mostra só o resumo e o botão do WhatsApp)
-        if (formFields) {
-          formFields.style.display = 'none';
-        }
-      } catch (err) {
-        console.error(err);
-        msgDiv.className = 'msg erro';
-        msgDiv.style.display = 'block';
-        msgDiv.innerText = err.message || 'Erro ao realizar agendamento. Tente novamente.';
-      }
-    }
-
-    // Máscara para data de nascimento (dd/MM/yyyy)
-    document.addEventListener('DOMContentLoaded', function() {
-      carregarHorarios();
-      
-      const dataNascInput = document.getElementById('dataNascimento');
-      if (dataNascInput) {
-        dataNascInput.addEventListener('input', function(e) {
-          let value = e.target.value.replace(/\D/g, ''); // Remove tudo que não é dígito
-          
-          if (value.length > 2) {
-            value = value.substring(0, 2) + '/' + value.substring(2);
-          }
-          if (value.length > 5) {
-            value = value.substring(0, 5) + '/' + value.substring(5, 9);
-          }
-          
-          e.target.value = value;
-        });
-      }
-    });
-  </script>
+  <script src="main.js"></script>
 </body>
+
 </html>
