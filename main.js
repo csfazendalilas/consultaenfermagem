@@ -8,6 +8,32 @@ const WHATSAPP_DESTINO = '5548920039171';
 let slotsGlobais = [];
 
 // ============================================
+// PROGRESS STEPS
+// ============================================
+function atualizarProgressStep(stepAtivo) {
+  const steps = document.querySelectorAll('.step');
+  const lines = document.querySelectorAll('.step-line');
+
+  steps.forEach((step, index) => {
+    const stepNum = index + 1;
+    step.classList.remove('active', 'completed');
+
+    if (stepNum < stepAtivo) {
+      step.classList.add('completed');
+    } else if (stepNum === stepAtivo) {
+      step.classList.add('active');
+    }
+  });
+
+  lines.forEach((line, index) => {
+    line.classList.remove('completed');
+    if (index < stepAtivo - 1) {
+      line.classList.add('completed');
+    }
+  });
+}
+
+// ============================================
 // VALIDAÇÃO INICIAL
 // ============================================
 (function () {
@@ -59,20 +85,15 @@ async function carregarHorarios() {
     if (!slotsGlobais.length) {
       loading.innerHTML = `
         <div class="loading-card">
-          <div class="loading-icon" style="background: #fef3c7; color: #d97706;">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="10"/>
-              <line x1="12" y1="8" x2="12" y2="12"/>
-              <line x1="12" y1="16" x2="12.01" y2="16"/>
-            </svg>
-          </div>
-          <p class="loading-text" style="color: #92400e;">Nenhum horário disponível no momento</p>
+          <div style="font-size: 3rem; margin-bottom: 8px;">😔</div>
+          <p class="loading-text">Nenhum horário disponível</p>
+          <p class="loading-subtext">Tente novamente mais tarde ou ligue para a unidade</p>
         </div>
       `;
       return;
     }
 
-    select.innerHTML = '<option value="">Escolha um horário</option>';
+    select.innerHTML = '<option value="">Toque para escolher um horário</option>';
     slotsGlobais.forEach((slot, index) => {
       const option = document.createElement('option');
       option.value = index;
@@ -95,17 +116,12 @@ async function carregarHorarios() {
     console.error(err);
     loading.innerHTML = `
       <div class="loading-card">
-        <div class="loading-icon" style="background: #fee2e2; color: #dc2626;">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"/>
-            <line x1="15" y1="9" x2="9" y2="15"/>
-            <line x1="9" y1="9" x2="15" y2="15"/>
-          </svg>
-        </div>
-        <p class="loading-text" style="color: #991b1b; margin-bottom: 16px;">
-          ${err.message || 'Não foi possível carregar os horários'}
+        <div style="font-size: 3rem; margin-bottom: 8px;">⚠️</div>
+        <p class="loading-text">Não foi possível carregar</p>
+        <p class="loading-subtext" style="margin-bottom: 16px;">
+          ${escapeHtml(err.message) || 'Verifique sua conexão com a internet'}
         </p>
-        <button type="button" class="btn btn-primary" onclick="carregarHorarios()" style="max-width: 200px;">
+        <button type="button" class="btn btn-primary" onclick="carregarHorarios()" style="max-width: 220px;">
           Tentar novamente
         </button>
       </div>
@@ -238,11 +254,26 @@ function validarFormulario() {
 }
 
 // ============================================
+// SANITIZAÇÃO DE HTML
+// ============================================
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+// ============================================
 // CONSTRUÇÃO DO RESUMO
 // ============================================
 function construirResumoAgendamento(slot, nome, telefone, dataNascimento, observacoes) {
   const diaSemana = slot.diaSemana ? slot.diaSemana.replace('-feira', '') : '';
   const dataFormatada = diaSemana ? `${diaSemana}, ${slot.data}` : slot.data;
+
+  // Escape user-provided data to prevent XSS
+  const nomeEscaped = escapeHtml(nome);
+  const telefoneEscaped = escapeHtml(telefone);
+  const dataNascimentoEscaped = escapeHtml(dataNascimento);
+  const observacoesEscaped = escapeHtml(observacoes);
 
   return `
     <div class="resumo-header">
@@ -264,19 +295,19 @@ function construirResumoAgendamento(slot, nome, telefone, dataNascimento, observ
       </li>
       <li>
         <strong>Paciente</strong>
-        <span>${nome}</span>
+        <span>${nomeEscaped}</span>
       </li>
       <li>
         <strong>Telefone</strong>
-        <span>${telefone}</span>
+        <span>${telefoneEscaped}</span>
       </li>
       <li>
         <strong>Nascimento</strong>
-        <span>${dataNascimento}</span>
+        <span>${dataNascimentoEscaped}</span>
       </li>
       <li>
         <strong>Motivo</strong>
-        <span>${observacoes}</span>
+        <span>${observacoesEscaped}</span>
       </li>
     </ul>
 
@@ -337,8 +368,8 @@ async function enviarAgendamento(event) {
   msgDiv.style.display = 'block';
   msgDiv.innerHTML = `
     <div style="display: flex; align-items: center; justify-content: center; gap: 12px; padding: 20px 0;">
-      <div style="width: 24px; height: 24px; border: 2.5px solid #e2e8f0; border-top-color: #0d9488; border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
-      <span style="color: #64748b; font-weight: 500;">Processando agendamento...</span>
+      <div style="width: 24px; height: 24px; border: 3px solid #ccfbf1; border-top-color: #0d9488; border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
+      <span style="color: #64748b; font-weight: 500;">Processando seu agendamento...</span>
     </div>
   `;
 
@@ -368,6 +399,9 @@ async function enviarAgendamento(event) {
     const res = await resp.json();
     console.log('Resposta da API:', res);
 
+    // Atualizar progress para step 3 (confirmação)
+    atualizarProgressStep(3);
+
     msgDiv.className = 'msg sucesso';
     msgDiv.innerHTML = construirResumoAgendamento(slot, nome, telefone, dataNascimento, observacoes);
 
@@ -378,7 +412,11 @@ async function enviarAgendamento(event) {
       formFields.style.display = 'none';
     }
 
-    msgDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    // Scroll suave para o topo do card
+    const card = document.querySelector('.card');
+    if (card) {
+      card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   } catch (err) {
     console.error(err);
 
@@ -474,6 +512,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Validação em tempo real
   configurarValidacaoEmTempoReal();
+
+  // Progress steps - atualizar ao selecionar horário
+  const slotSelect = document.getElementById('slotSelect');
+  if (slotSelect) {
+    slotSelect.addEventListener('change', function () {
+      if (this.value) {
+        atualizarProgressStep(2);
+      } else {
+        atualizarProgressStep(1);
+      }
+    });
+  }
 
   // Submit do formulário
   const form = document.getElementById('agendamento-form');
