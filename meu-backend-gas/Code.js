@@ -27,7 +27,7 @@ function doGet(e) {
 
 /**
  * POST:
- *  - corpo JSON com { rowIndex, nome, telefone, dataNascimento, observacoes }
+ *  - corpo JSON com { rowIndex, nome, observacoes }
  *  - grava na planilha e retorna JSON com mensagem
  */
 function doPost(e) {
@@ -54,8 +54,6 @@ function doPost(e) {
       data = {
         rowIndex: e.parameter.rowIndex ? parseInt(e.parameter.rowIndex) : undefined,
         nome: e.parameter.nome || '',
-        telefone: e.parameter.telefone || '',
-        dataNascimento: e.parameter.dataNascimento || '',
         observacoes: e.parameter.observacoes || ''
       };
     }
@@ -78,8 +76,8 @@ function doPost(e) {
       throw new Error('Dados inválidos: rowIndex não encontrado ou inválido. Recebido: ' + JSON.stringify(data));
     }
 
-    if (!data.nome || !data.telefone) {
-      throw new Error('Dados inválidos: nome e telefone são obrigatórios. Recebido: ' + JSON.stringify(data));
+    if (!data.nome) {
+      throw new Error('Dados inválidos: nome é obrigatório. Recebido: ' + JSON.stringify(data));
     }
 
     // Converte rowIndex para número se necessário
@@ -209,8 +207,8 @@ function bookSlot(bookingData) {
     throw new Error('Dados de agendamento inválidos: rowIndex não encontrado');
   }
 
-  if (!bookingData.nome || !bookingData.telefone) {
-    throw new Error('Dados de agendamento inválidos: nome e telefone são obrigatórios');
+  if (!bookingData.nome) {
+    throw new Error('Dados de agendamento inválidos: nome é obrigatório');
   }
 
   // Força o uso do ID específico, não da planilha vinculada
@@ -235,8 +233,6 @@ function bookSlot(bookingData) {
 
   const rowIndex = bookingData.rowIndex;
   const nome = bookingData.nome;
-  const telefone = bookingData.telefone;
-  const dataNascimento = bookingData.dataNascimento || '';
   const observacoes = bookingData.observacoes || '';
 
   const row = sheetHor.getRange(rowIndex, 1, 1, 3).getValues()[0];
@@ -267,15 +263,13 @@ function bookSlot(bookingData) {
   );
 
   // Registra o agendamento
-  // Ordem: Timestamp, Data, Hora, Nome, DN, Observacoes, Telefone
+  // Ordem: Timestamp, Data, Hora, Nome, Observacoes
   sheetAg.appendRow([
     new Date(), // Timestamp
     dataFormatada,
     horaFormatada,
     nome,
-    dataNascimento,
-    observacoes,
-    telefone
+    observacoes
   ]);
 
   return {
