@@ -132,28 +132,6 @@ async function carregarHorarios() {
 // ============================================
 // VALIDAÇÕES
 // ============================================
-function validarTelefone(telefone) {
-  const apenasNumeros = telefone.replace(/\D/g, '');
-  return apenasNumeros.length >= 10 && apenasNumeros.length <= 11;
-}
-
-function validarDataNascimento(data) {
-  const regex = /^(\d{2})\/(\d{2})\/(\d{4})$/;
-  if (!regex.test(data)) {
-    return { valido: false, mensagem: 'Use o formato DD/MM/AAAA' };
-  }
-
-  const partes = data.split('/');
-  const dia = parseInt(partes[0], 10);
-  const mes = parseInt(partes[1], 10);
-  const ano = parseInt(partes[2], 10);
-
-  if (dia < 1 || dia > 31 || mes < 1 || mes > 12 || ano < 1900 || ano > new Date().getFullYear()) {
-    return { valido: false, mensagem: 'Data inválida. Verifique dia, mês e ano.' };
-  }
-
-  return { valido: true };
-}
 
 // ============================================
 // GERENCIAMENTO DE ERROS
@@ -187,7 +165,7 @@ function limparErroCampo(campoId) {
 }
 
 function limparTodosErros() {
-  ['slotSelect', 'nome', 'dataNascimento', 'telefone', 'observacoes'].forEach(limparErroCampo);
+  ['slotSelect', 'nome', 'observacoes'].forEach(limparErroCampo);
 }
 
 // ============================================
@@ -198,8 +176,6 @@ function validarFormulario() {
 
   const select = document.getElementById('slotSelect');
   const nome = document.getElementById('nome').value.trim();
-  const telefone = document.getElementById('telefone').value.trim();
-  const dataNascimento = document.getElementById('dataNascimento').value.trim();
   const observacoes = document.getElementById('observacoes').value.trim();
 
   let valido = true;
@@ -215,29 +191,6 @@ function validarFormulario() {
     mostrarErroCampo('nome', 'Informe seu nome completo');
     valido = false;
     if (!primeiroCampoComErro) primeiroCampoComErro = document.getElementById('nome');
-  }
-
-  if (!dataNascimento) {
-    mostrarErroCampo('dataNascimento', 'Informe sua data de nascimento');
-    valido = false;
-    if (!primeiroCampoComErro) primeiroCampoComErro = document.getElementById('dataNascimento');
-  } else {
-    const validacaoData = validarDataNascimento(dataNascimento);
-    if (!validacaoData.valido) {
-      mostrarErroCampo('dataNascimento', validacaoData.mensagem);
-      valido = false;
-      if (!primeiroCampoComErro) primeiroCampoComErro = document.getElementById('dataNascimento');
-    }
-  }
-
-  if (!telefone) {
-    mostrarErroCampo('telefone', 'Informe seu telefone');
-    valido = false;
-    if (!primeiroCampoComErro) primeiroCampoComErro = document.getElementById('telefone');
-  } else if (!validarTelefone(telefone)) {
-    mostrarErroCampo('telefone', 'Telefone inválido');
-    valido = false;
-    if (!primeiroCampoComErro) primeiroCampoComErro = document.getElementById('telefone');
   }
 
   if (!observacoes || observacoes.length < 5) {
@@ -265,14 +218,12 @@ function escapeHtml(text) {
 // ============================================
 // CONSTRUÇÃO DO RESUMO
 // ============================================
-function construirResumoAgendamento(slot, nome, telefone, dataNascimento, observacoes) {
+function construirResumoAgendamento(slot, nome, observacoes) {
   const diaSemana = slot.diaSemana ? slot.diaSemana.replace('-feira', '') : '';
   const dataFormatada = diaSemana ? `${diaSemana}, ${slot.data}` : slot.data;
 
   // Escape user-provided data to prevent XSS
   const nomeEscaped = escapeHtml(nome);
-  const telefoneEscaped = escapeHtml(telefone);
-  const dataNascimentoEscaped = escapeHtml(dataNascimento);
   const observacoesEscaped = escapeHtml(observacoes);
 
   return `
@@ -296,14 +247,6 @@ function construirResumoAgendamento(slot, nome, telefone, dataNascimento, observ
       <li>
         <strong>Paciente</strong>
         <span>${nomeEscaped}</span>
-      </li>
-      <li>
-        <strong>Telefone</strong>
-        <span>${telefoneEscaped}</span>
-      </li>
-      <li>
-        <strong>Nascimento</strong>
-        <span>${dataNascimentoEscaped}</span>
       </li>
       <li>
         <strong>Motivo</strong>
@@ -348,8 +291,6 @@ async function enviarAgendamento(event) {
   }
 
   const nome = document.getElementById('nome').value.trim();
-  const telefone = document.getElementById('telefone').value.trim();
-  const dataNascimento = document.getElementById('dataNascimento').value.trim();
   const observacoes = document.getElementById('observacoes').value.trim();
 
   const msgDiv = document.getElementById('mensagem');
@@ -376,8 +317,6 @@ async function enviarAgendamento(event) {
   const dados = {
     rowIndex: slot.rowIndex,
     nome: nome,
-    telefone: telefone,
-    dataNascimento: dataNascimento,
     observacoes: observacoes
   };
 
@@ -403,7 +342,7 @@ async function enviarAgendamento(event) {
     atualizarProgressStep(3);
 
     msgDiv.className = 'msg sucesso';
-    msgDiv.innerHTML = construirResumoAgendamento(slot, nome, telefone, dataNascimento, observacoes);
+    msgDiv.innerHTML = construirResumoAgendamento(slot, nome, observacoes);
 
     waLink.href = construirUrlWhatsApp(slot, nome);
     waDiv.style.display = 'block';
@@ -435,61 +374,18 @@ async function enviarAgendamento(event) {
   }
 }
 
-// ============================================
-// MÁSCARAS DE INPUT
-// ============================================
-function aplicarMascaraTelefone(input) {
-  let value = input.value.replace(/\D/g, '');
-
-  if (value.length <= 2) {
-    input.value = value ? '(' + value : '';
-  } else if (value.length <= 7) {
-    input.value = '(' + value.substring(0, 2) + ') ' + value.substring(2);
-  } else if (value.length <= 10) {
-    input.value = '(' + value.substring(0, 2) + ') ' + value.substring(2, 6) + '-' + value.substring(6);
-  } else {
-    input.value = '(' + value.substring(0, 2) + ') ' + value.substring(2, 7) + '-' + value.substring(7, 11);
-  }
-}
-
-function aplicarMascaraData(input) {
-  let value = input.value.replace(/\D/g, '');
-
-  if (value.length > 2) {
-    value = value.substring(0, 2) + '/' + value.substring(2);
-  }
-  if (value.length > 5) {
-    value = value.substring(0, 5) + '/' + value.substring(5, 9);
-  }
-
-  input.value = value;
-}
 
 // ============================================
 // VALIDAÇÃO EM TEMPO REAL
 // ============================================
 function configurarValidacaoEmTempoReal() {
-  const campos = ['slotSelect', 'nome', 'dataNascimento', 'telefone', 'observacoes'];
+  const campos = ['slotSelect', 'nome', 'observacoes'];
 
   campos.forEach(campoId => {
     const campo = document.getElementById(campoId);
     if (!campo) return;
 
     campo.addEventListener('input', () => limparErroCampo(campoId));
-
-    campo.addEventListener('blur', function () {
-      const valor = campo.value.trim();
-      if (!valor) return;
-
-      if (campoId === 'telefone' && !validarTelefone(valor)) {
-        mostrarErroCampo(campoId, 'Telefone inválido');
-      } else if (campoId === 'dataNascimento') {
-        const validacao = validarDataNascimento(valor);
-        if (!validacao.valido) {
-          mostrarErroCampo(campoId, validacao.mensagem);
-        }
-      }
-    });
   });
 }
 
@@ -498,17 +394,6 @@ function configurarValidacaoEmTempoReal() {
 // ============================================
 document.addEventListener('DOMContentLoaded', function () {
   carregarHorarios();
-
-  // Máscaras
-  const dataNascInput = document.getElementById('dataNascimento');
-  if (dataNascInput) {
-    dataNascInput.addEventListener('input', (e) => aplicarMascaraData(e.target));
-  }
-
-  const telefoneInput = document.getElementById('telefone');
-  if (telefoneInput) {
-    telefoneInput.addEventListener('input', (e) => aplicarMascaraTelefone(e.target));
-  }
 
   // Validação em tempo real
   configurarValidacaoEmTempoReal();
