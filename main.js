@@ -165,7 +165,7 @@ function limparErroCampo(campoId) {
 }
 
 function limparTodosErros() {
-  ['slotSelect', 'nome', 'observacoes'].forEach(limparErroCampo);
+  ['slotSelect', 'nome', 'dataNascimento', 'observacoes'].forEach(limparErroCampo);
 }
 
 // ============================================
@@ -176,6 +176,7 @@ function validarFormulario() {
 
   const select = document.getElementById('slotSelect');
   const nome = document.getElementById('nome').value.trim();
+  const dataNascimento = document.getElementById('dataNascimento').value;
   const observacoes = document.getElementById('observacoes').value.trim();
 
   let valido = true;
@@ -191,6 +192,12 @@ function validarFormulario() {
     mostrarErroCampo('nome', 'Informe seu nome completo');
     valido = false;
     if (!primeiroCampoComErro) primeiroCampoComErro = document.getElementById('nome');
+  }
+
+  if (!dataNascimento) {
+    mostrarErroCampo('dataNascimento', 'Informe sua data de nascimento');
+    valido = false;
+    if (!primeiroCampoComErro) primeiroCampoComErro = document.getElementById('dataNascimento');
   }
 
   if (!observacoes || observacoes.length < 5) {
@@ -218,12 +225,13 @@ function escapeHtml(text) {
 // ============================================
 // CONSTRUÇÃO DO RESUMO
 // ============================================
-function construirResumoAgendamento(slot, nome, observacoes) {
+function construirResumoAgendamento(slot, nome, dataNascimento, observacoes) {
   const diaSemana = slot.diaSemana ? slot.diaSemana.replace('-feira', '') : '';
   const dataFormatada = diaSemana ? `${diaSemana}, ${slot.data}` : slot.data;
 
   // Escape user-provided data to prevent XSS
   const nomeEscaped = escapeHtml(nome);
+  const dataNascimentoEscaped = escapeHtml(dataNascimento);
   const observacoesEscaped = escapeHtml(observacoes);
 
   return `
@@ -247,6 +255,10 @@ function construirResumoAgendamento(slot, nome, observacoes) {
       <li>
         <strong>Paciente</strong>
         <span>${nomeEscaped}</span>
+      </li>
+      <li>
+        <strong>Nascimento</strong>
+        <span>${dataNascimentoEscaped}</span>
       </li>
       <li>
         <strong>Motivo</strong>
@@ -291,7 +303,15 @@ async function enviarAgendamento(event) {
   }
 
   const nome = document.getElementById('nome').value.trim();
+  const dataNascimentoInput = document.getElementById('dataNascimento').value;
   const observacoes = document.getElementById('observacoes').value.trim();
+
+  // Formata data de nascimento de YYYY-MM-DD para DD/MM/YYYY
+  let dataNascimento = '';
+  if (dataNascimentoInput) {
+    const partes = dataNascimentoInput.split('-');
+    dataNascimento = partes[2] + '/' + partes[1] + '/' + partes[0];
+  }
 
   const msgDiv = document.getElementById('mensagem');
   const waDiv = document.getElementById('whatsapp-container');
@@ -317,6 +337,7 @@ async function enviarAgendamento(event) {
   const dados = {
     rowIndex: slot.rowIndex,
     nome: nome,
+    dataNascimento: dataNascimento,
     observacoes: observacoes
   };
 
@@ -342,7 +363,7 @@ async function enviarAgendamento(event) {
     atualizarProgressStep(3);
 
     msgDiv.className = 'msg sucesso';
-    msgDiv.innerHTML = construirResumoAgendamento(slot, nome, observacoes);
+    msgDiv.innerHTML = construirResumoAgendamento(slot, nome, dataNascimento, observacoes);
 
     waLink.href = construirUrlWhatsApp(slot, nome);
     waDiv.style.display = 'block';
@@ -379,7 +400,7 @@ async function enviarAgendamento(event) {
 // VALIDAÇÃO EM TEMPO REAL
 // ============================================
 function configurarValidacaoEmTempoReal() {
-  const campos = ['slotSelect', 'nome', 'observacoes'];
+  const campos = ['slotSelect', 'nome', 'dataNascimento', 'observacoes'];
 
   campos.forEach(campoId => {
     const campo = document.getElementById(campoId);
