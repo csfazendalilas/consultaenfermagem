@@ -1,0 +1,12 @@
+# Backend do Google Apps Script — NAO deve ficar no repositorio publico.
+.clasp.json
+.clasprc.json
+backend/
+meu-backend-gas/
+Code.js
+code.js
+TriggerPosto.js
+TriggerEnfermagem.js
+appsscript.json
+.cursor/
+.DS_Store
